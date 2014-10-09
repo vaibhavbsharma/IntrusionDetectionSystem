@@ -1,5 +1,8 @@
 IntrusionDetectionSystem
 ========================
+
+<b>Evolutionary Computation class project for Michigan State University</b>
+
 Purpose<br>
 The purpose of this project is - given a data set, use a Genetic Algorithm to identify a good subset of features which can be used by an Ensemble classifier to classify network traffic as good or bad. 
 
