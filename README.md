@@ -20,7 +20,6 @@ The Weka library[2] is a collection of implementation for various data mining al
 References<br>
 <ol>
 <li>http://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html</li>
-<br>
 <li>http://www.cs.waikato.ac.nz/ml/weka/ </li>
 </ol>
 
