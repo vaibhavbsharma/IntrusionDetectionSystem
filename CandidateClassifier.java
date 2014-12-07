@@ -17,14 +17,14 @@ public class CandidateClassifier {
 	double fitness1, fitness2;
 	
 	CandidateClassifier(String gene, Instances _train, Instances _test) {
-		System.out.println("Creating CandidateClassifier with gene = "+gene);
-		System.out.println("_train.numAttributes = "+_train.numAttributes());
-		System.out.println("_test.numAttributes = "+_test.numAttributes());
+		//System.out.println("Creating CandidateClassifier with gene = "+gene);
+		//System.out.println("_train.numAttributes = "+_train.numAttributes());
+		//System.out.println("_test.numAttributes = "+_test.numAttributes());
 		train = new Instances(_train);
 		test = new Instances(_test);
 
 		
-		for(int i=0;i<gene.length();i++) {
+		for(int i=gene.length()-1;i>=0;i--) {
 			if(gene.charAt(i) =='0') {
 				if(i>=train.numAttributes() || i==train.classIndex()) {
 					System.out.println("Delete attribute fails, i = "+i+" numAttributes = "+train.numAttributes());
@@ -48,24 +48,25 @@ public class CandidateClassifier {
 		classifier.buildClassifier(train);
 		Evaluation eval_train = new Evaluation(train);
 		eval_train.crossValidateModel(classifier,test,10,new Random(1));
-		System.out.println(eval_train.toSummaryString("\nResults\n",true));
-		System.out.println(eval_train.fMeasure(1) + " " + eval_train.precision(1) + " " + eval_train.recall(1));
-		double[][] cm_train = eval_train.confusionMatrix();
-		System.out.println(cm_train[0][0]+" "+cm_train[0][1]);
-		System.out.println(cm_train[1][0]+" "+cm_train[1][1]);
+		//System.out.println(eval_train.toSummaryString("\nResults\n",true));
+		//System.out.println(eval_train.fMeasure(1) + " " + eval_train.precision(1) + " " + eval_train.recall(1));
+		//double[][] cm_train = eval_train.confusionMatrix();
+		//System.out.println(cm_train[0][0]+" "+cm_train[0][1]);
+		//System.out.println(cm_train[1][0]+" "+cm_train[1][1]);
 		
 		 Evaluation eTest = new Evaluation(train);
 		 eTest.evaluateModel(classifier, test);
 		 // Print the result à la Weka explorer:
-		 String strSummary = eTest.toSummaryString();
-		 System.out.println(strSummary);
+		 //String strSummary = eTest.toSummaryString();
+		 //System.out.println(strSummary);
 		 
 		 // Get the confusion matrix
-		 double[][] cmMatrix = eTest.confusionMatrix();
-		 System.out.println(cmMatrix[0][0]+" "+cmMatrix[0][1]);
-		 System.out.println(cmMatrix[1][0]+" "+cmMatrix[1][1]);
+		 //double[][] cmMatrix = eTest.confusionMatrix();
+		 //System.out.println(cmMatrix[0][0]+" "+cmMatrix[0][1]);
+		 //System.out.println(cmMatrix[1][0]+" "+cmMatrix[1][1]);
 		 
 		 fitness1=eTest.kappa();
+		 
 		 
 		
 	}
