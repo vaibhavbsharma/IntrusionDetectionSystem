@@ -1,16 +1,19 @@
 
 public class Individual implements Comparable<Individual>{
-	String gene;
-	double fitness;
-	Individual(){}
-	Individual(String _gene){
-		gene = _gene;
+	String gene_;
+	double fitness_;
+	double [][] cMatrix;
+	Individual(){
+		fitness_=-1;
 	}
-	@Override
+	Individual(String _gene){
+		gene_ = _gene;
+		fitness_=-1;
+	}
 	public int compareTo(Individual otherIndividual) {
-		if(fitness > otherIndividual.fitness)
+		if(fitness_ > otherIndividual.fitness_)
 			return 1;
-		if(fitness < otherIndividual.fitness)
+		if(fitness_ < otherIndividual.fitness_)
 			return -1;
 		return 0;
 	}

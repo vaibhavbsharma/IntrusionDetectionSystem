@@ -31,7 +31,7 @@ public class FeatureSubsetGA {
 
 		BufferedReader breader_train = null;
 		try {
-			breader_train = new BufferedReader(new FileReader("/Users/vaibhavsharma/datasets/KDDTrain.arff"));
+			breader_train = new BufferedReader(new FileReader("/Users/vaibhav/datasets/KDDTrain.arff"));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,7 +54,7 @@ public class FeatureSubsetGA {
 		System.out.println("Created training set");
 		BufferedReader breader_test = null;
 		try {
-			breader_test = new BufferedReader(new FileReader("/Users/vaibhavsharma/datasets/KDDTest.arff"));
+			breader_test = new BufferedReader(new FileReader("/Users/vaibhav/datasets/KDDTest.arff"));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +80,9 @@ public class FeatureSubsetGA {
 	}
 	
 	int randomGenerator(int n) {
-	        return generator_.nextInt(n+1);
+	        int ret= generator_.nextInt(n+1);
+	        //System.out.println("Returning random number = "+ret+" bound within "+n);
+	        return ret;
 	}
 	
 	void initializePopulation(int num) {
@@ -97,42 +99,43 @@ public class FeatureSubsetGA {
 	
 	void calcFitness() throws Exception{
 		System.out.println("Calculating fitness");
-		for(int i=0;i<population_.size();i++){
-			//TODO commenting out for dry run
-			CandidateClassifier temp_classifier = 
-					new CandidateClassifier(population_.elementAt(i).gene,training_set_,test_set_);
-			temp_classifier.classify();
-			population_.elementAt(i).fitness=temp_classifier.getFitness1();
-			
-			//population_.elementAt(i).fitness=randomGenerator(1000);//TODO temporary 
+		for(int i=0;i<population_size_;i++){
+			if(population_.elementAt(i).fitness_==-1) {
+				CandidateClassifier temp_classifier = 
+						new CandidateClassifier(population_.elementAt(i).gene_,training_set_,test_set_);
+				temp_classifier.classify();
+				population_.elementAt(i).fitness_=temp_classifier.getFitness1();
+				population_.elementAt(i).cMatrix=temp_classifier.getCMatrix();
+			}
+			else {
+				System.out.println(population_.elementAt(i).fitness_+" "+population_.elementAt(i).gene_);
+			}
 		}
 		System.out.println("Complete fitness calculation for population");
 	}
 	
 	void sortPopulationByFitness() {
 		Collections.sort(population_);
+		Collections.reverse(population_);
 	}
 	
 	void crossoverPopulation() {
 		System.out.println("Starting crossover");
-		int popSize = population_.size();
-		for(int i=0;i<popSize/2;i+=2) {
-			Vector<Individual> tmp_vec = 
+		for(int i=0;i<population_size_/2;i+=1) {
+			Individual tmp_ind = 
 					performCrossover(population_.elementAt(i),
-							population_.elementAt(i+1));
-			population_.set(popSize-i-1, tmp_vec.elementAt(0));
-			population_.set(popSize-i-2, tmp_vec.elementAt(1));
+							population_.elementAt(population_size_-i-1));
+			//population_.set(i, tmp_vec.elementAt(0));
+			population_.set(population_size_-i-1, tmp_ind);
 		}
 		System.out.println("Completed crossover");
 		
 	}
 	
-	Vector<Individual> performCrossover(Individual i1, Individual i2) {
+	Individual performCrossover(Individual i1, Individual i2) {
 		//System.out.println("Starting crossover"); for "+i1.gene+" and "+i2.gene);
-		Vector<Individual> ret_vec = new Vector<Individual>();
-		Individual child1,child2;
+		Individual child1;
 		child1 = new Individual();
-		child2 = new Individual();
 		int point1,point2;
 		point1 = randomGenerator(feature_size_-1);
 		point2 = randomGenerator(feature_size_-1);
@@ -141,69 +144,72 @@ public class FeatureSubsetGA {
 			point1=point2;
 			point2=tmp;
 		}
-		int len1 = i1.gene.length();
-		int len2 = i2.gene.length();
+		int len1 = i1.gene_.length();
+		int len2 = i2.gene_.length();
 		if(len1 != len2 || len2 != feature_size_) {
 			System.out.println("performCrossover found individuals with sizes = "+len1+" "+len2+" feature_size_ = "
 					+feature_size_);
 		}
 		//System.out.println("Using point1 = "+point1+" point2= "+point2);
-		child1.gene=i1.gene.substring(0,point1) + i2.gene.substring(point1,point2+1);
+		child1.gene_=i1.gene_.substring(0,point1) + i2.gene_.substring(point1,point2+1);
 		if(point2+1<=len1)
-				child1.gene+= i1.gene.substring(point2+1,len1);
-		child2.gene=i2.gene.substring(0,point1) + i1.gene.substring(point1,point2+1);
-		if(point2+1<=len2)
-			child2.gene+=i2.gene.substring(point2+1,len2);
-		if(child1.gene.length()!=feature_size_ || child2.gene.length()!=feature_size_){
-			System.out.println("Incorrect crossover performed "+child1.gene.length()+" "+child2.gene.length());
-			System.exit(2);
-		}
+				child1.gene_+= i1.gene_.substring(point2+1,len1);
 		
-		ret_vec.add(child1);
-		ret_vec.add(child2);
+		
+		//Mutating 1 bit in each child randomly
+		child1.gene_ = mutateGene(child1.gene_);
+		if(i1.gene_==i2.gene_)//Mutate twice if parents were the same to increase diversity
+			child1.gene_ = mutateGene(child1.gene_);
+		
 		//System.out.println("child1 = "+child1.gene+" child2 = "+child2.gene);
-		return ret_vec;
+		return child1;
 	}
 	
 	double getBestFitness() {
-		return population_.elementAt(0).fitness;
+		return population_.elementAt(0).fitness_;
 	}
 	
 	String getBestGene() {
-		return population_.elementAt(0).gene;
+		return population_.elementAt(0).gene_;
 	}
 	
-	void mutatePopulation() {
-		System.out.println("Mutating population");
-		int rand_pop_ind = randomGenerator(population_size_-1);
-		Individual individual = population_.elementAt(rand_pop_ind);
-		int rand_feature_ind = randomGenerator(feature_size_-1);
-		String s;
-		int len = individual.gene.length();
-		//System.out.println("Changing "+individual.gene+" to ");
-		s = individual.gene.substring(0,rand_feature_ind);
-		if(individual.gene.charAt(rand_feature_ind)=='0')
-			s+='1';
-		else s+='0';
-		s+=individual.gene.substring(rand_feature_ind+1,len);
-		individual.gene = s;
-		population_.setElementAt(individual,rand_pop_ind);
-		//System.out.println(individual.gene);
-		System.out.println("Completed mutation");
+	double[][] getBestCMatrix() {
+		return population_.elementAt(0).cMatrix;
 	}
+	
+	String mutateGene(String s) {
+		//System.out.println("Mutating population");
+		int rand_feature_ind = randomGenerator(feature_size_-1);
+		int len = s.length();
+		String ret=new String();
+		//System.out.println("Changing "+individual.gene+" to ");
+		ret = s.substring(0,rand_feature_ind);
+		if(s.charAt(rand_feature_ind)=='0')
+			ret+='1';
+		else ret+='0';
+		ret+=s.substring(rand_feature_ind+1,len);
+		//System.out.println(individual.gene);
+		//System.out.println("Completed mutation");
+		return ret;
+	}
+
 	
 	public static void main(String args[]) throws Exception {
 		PrintWriter writer = new PrintWriter("dry_run-1.log","UTF-8");
-		FeatureSubsetGA ga = new FeatureSubsetGA(writer,100,41);
+		FeatureSubsetGA ga = new FeatureSubsetGA(writer,20,41);
 		
-		int maxIterations=1000;
+		int maxIterations=150;
 		for(int iter=1;iter<=maxIterations;iter++){
 			System.out.println("Starting generation: "+iter);
 			ga.calcFitness();
 			ga.sortPopulationByFitness();
 			ga.crossoverPopulation();
-			ga.mutatePopulation();
+			//ga.mutatePopulation();
+			ga.sortPopulationByFitness();
 			System.out.println("Generation: "+iter+" Best Fitness = "+ga.getBestFitness());
+			System.out.println("Best Gene =  "+ga.getBestGene());
+			double[][] cm = ga.getBestCMatrix();
+			System.out.println("cMatrix=  "+cm[0][0]+" "+cm[0][1]+" "+cm[1][0]+" "+cm[1][1]);
 		}
 		System.out.println("Best candidate gene: "+ ga.getBestGene());
 		writer.close();
